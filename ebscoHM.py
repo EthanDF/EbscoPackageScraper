@@ -3,26 +3,13 @@ import tkinter as tk
 import time
 import codecs
 import csv
-import requests
-import json
 from bs4 import BeautifulSoup
 import re
 from fuzzywuzzy import fuzz
 
-def requestsTry():
-    xcookie = {'eadmin':'987922823BB6BE864440ED2A00F9A726AE13C9B2325A4DD4B8ACC6171E9B3F037C572609F8E705516E178BB06FD60A0770D63710594617705E6218B9FE124F99DC4C4C6F4151C5B3237AB48839C032CE66011828CF85D32D00E77E1C0A3B68DC927CACB3B8B2EB46A5226D987E553F505E0C97C8675318C1807709EDE3D5A0BA78A218C0D241AFAE47BEF888E63A5EE9D7352160C21AFBC50AED22BA000E7D863CCCC6AB883792B407763E28D0FC20C38B39FE97D16ED90EE9BE8354DE1CF8F287F86A04'}
-    xurl = 'http://admin.ebscohost.com/adminapi/1-0-0/api/packagesearch'
-    payload = {
-
-            'searchTerm': "Accounting Research Manager",
-            'resultsPerPage': "100",
-            'pageIndex': "1",
-            'selShowType': 0}
-
-    r = requests.post(xurl,data=json.dumps(payload))
-    return r
 
 def writeTestResults(string):
+    """used for writing test outputs to a test file - not a key part of the script """
     testOut = 'testOut.txt'
     with codecs.open(testOut, 'w', 'utf-8') as x:
         x.write(string)
@@ -115,15 +102,6 @@ def scraper():
     pw.send_keys(password)
     # press enter
     pw.send_keys(Keys.RETURN)
-
-    # test cases - in implementation, these will need to be read through a loop
-
-    databaseCode = 'BKI'
-    defaultDatabaseName = 'AERADE'
-    testURL = 'http://admin.ebscohost.com/adminweb/holdings/packages?searchTerm=Accounting%20Research%20Manager&resultsPerPage=100&pageIndex=1&selShowType=0&contentType=0&sortType=1&pubType=0'
-
-    useURL = urllib.parse.quote_plus(defaultDatabaseName)
-    packageSearchURL = "http://admin.ebscohost.com/adminweb/holdings/packages?searchTerm="+useURL+"&resultsPerPage=100&pageIndex=1&selShowType=0&contentType=0&sortType=1&pubType=0"
 
     databaseList = getDatabaseList()
     for d in databaseList:
