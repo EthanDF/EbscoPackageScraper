@@ -154,3 +154,5 @@ def scraper():
 
     driver.close()
     print("done!")
+
+scraper()
