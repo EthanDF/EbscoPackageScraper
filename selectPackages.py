@@ -76,8 +76,10 @@ def selectPackages():
             # find all the "buttons" on the page - it'll be button 1, send the enter key
             continueButton = driver.find_elements_by_tag_name('button')
             continueButton[1].send_keys(Keys.ENTER)
+            print('\tpackage selected')
         else:
-            print('already selected, continuing...')
+            print('\talready selected, continuing...')
+        time.sleep(1)
 
         # find the save button
         saveButton = driver.find_element_by_css_selector('input.btn.btn-warning.evt-save')
@@ -89,18 +91,28 @@ def selectPackages():
             pass
         elif onlySomeTitles == 'No' and ebscoNewTitlesValue == False:
             ebscoNewTitles.send_keys(Keys.SPACE)
+            print('\tSetting "Allow EBSCO To Add New Titles to Yes')
             time.sleep(1)
             saveButton.send_keys(Keys.ENTER)
         elif onlySomeTitles == 'Yes' and ebscoNewTitlesValue == True:
             ebscoNewTitles.send_keys(Keys.SPACE)
+            print('\tSetting "Allow EBSCO To Add New Titles to No')
             saveButton.send_keys(Keys.ENTER)
 
         # set the Proxy Server Value
-
+        time.sleep(1)
         proxyServer = driver.find_element_by_css_selector('button.btn.btn-flat.sel-show-type.evt-isSelected-disable')
         saveButton = driver.find_element_by_css_selector('input.btn.btn-warning.evt-save')
         # get the current value of the proxyServer dropdown
         proxyServerValue = proxyServer.text
+
+        # possible values in the dropdown
+        n = 'None'
+        p = 'EZproxy'
+        tp = 'Token Proxy'
+        ip = 'Inherited - EZproxy'
+        it = 'Inherited - Token Proxy'
+
         # click the dropdown
         proxyServer.click()
         time.sleep(1)
@@ -109,33 +121,42 @@ def selectPackages():
         liText = []
         for li in listItems:
             liText.append(li.text)
-        #     'None', 'Inherited - EZproxy', 'Token Proxy'
-        n = liText.index('None')
-        i = liText.index('Inherited - EZproxy')
-        t = liText.index('Token Proxy')
 
-        if omitProxy == 'Yes' and proxyServerValue == 'Inherited - EZproxy':
+        n = liText.index('None')
+        try:
+            i = liText.index(ip)
+            t = liText.index(tp)
+        except ValueError:
+            t = liText.index(p)
+            i = liText.index(it)
+
+        if omitProxy == 'Yes' and proxyServerValue in(ip,it):
             listItems[n].click()
+            print('\tInherited')
             time.sleep(1)
             saveButton.send_keys(Keys.ENTER)
-        elif omitProxy == 'Yes' and proxyServerValue == 'None':
+        elif omitProxy == 'Yes' and proxyServerValue == n:
             pass
-        elif omitProxy == 'Yes' and proxyServerValue == 'Token Proxy':
+        elif omitProxy == 'Yes' and proxyServerValue == tp:
             listItems[n].click()
+            print('\tSetting Proxy Server to None')
             time.sleep(1)
             saveButton.send_keys(Keys.ENTER)
-        elif omitProxy == 'No' and proxyServerValue == 'Inherited - EZproxy':
+        elif omitProxy == 'No' and proxyServerValue in(ip,it) :
             pass
-        elif omitProxy == 'No' and proxyServerValue == 'None':
+        elif omitProxy == 'No' and proxyServerValue == n:
             listItems[i].click()
+            print('\tSetting Proxy Server to Inherited')
             time.sleep(1)
             saveButton.send_keys(Keys.ENTER)
-        elif omitProxy == 'No' and proxyServerValue == 'Token Proxy':
+        elif omitProxy == 'No' and proxyServerValue in(tp,p):
             listItems[i].click()
+            print('\tSetting Proxy Server to Inherited')
             time.sleep(1)
             saveButton.send_keys(Keys.ENTER)
 
         # Save at the end
+        saveButton = driver.find_element_by_css_selector('input.btn.btn-warning.evt-save')
         saveButton.send_keys(Keys.ENTER)
 
     driver.close()
