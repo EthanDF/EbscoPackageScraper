@@ -83,21 +83,51 @@ def selectPackages():
 
         # find the save button
         saveButton = driver.find_element_by_css_selector('input.btn.btn-warning.evt-save')
+        saveButton.click()
+
+        time.sleep(1)
+        # find the number of available titles and number of titles selected
+        availableTitles = driver.find_element_by_css_selector('td.col.al-center')
+        availableTitlesText = availableTitles.text
+        titlesSelected = driver.find_element_by_css_selector('strong.evt-selected-count.blue')
+        titlesSelectedText = titlesSelected.text
+
+        availableTitlesEqualToSelectedTitles = int(availableTitlesText) == int(titlesSelectedText)
 
         # set the "Allow EBSCO to Add New Titles to the correct value
         ebscoNewTitles = driver.find_element_by_class_name('radio')
         ebscoNewTitlesValue = ebscoNewTitles.is_selected()
-        if (onlySomeTitles == 'No' and ebscoNewTitlesValue == True) or (onlySomeTitles == 'Yes' and ebscoNewTitlesValue == False):
-            pass
-        elif onlySomeTitles == 'No' and ebscoNewTitlesValue == False:
-            ebscoNewTitles.send_keys(Keys.SPACE)
-            print('\tSetting "Allow EBSCO To Add New Titles to Yes')
-            time.sleep(1)
-            saveButton.send_keys(Keys.ENTER)
-        elif onlySomeTitles == 'Yes' and ebscoNewTitlesValue == True:
-            ebscoNewTitles.send_keys(Keys.SPACE)
-            print('\tSetting "Allow EBSCO To Add New Titles to No')
-            saveButton.send_keys(Keys.ENTER)
+
+        # print findings from above...
+        print('\tAvailable titles: '+str(availableTitlesText)+', Selected Titles: '+str(titlesSelectedText)+
+              ', The same: '+str(availableTitlesEqualToSelectedTitles)+
+              '... Allow EBSCO to Add New Titles is set to: '+str(ebscoNewTitlesValue))
+
+        if availableTitlesEqualToSelectedTitles is True:
+            if ebscoNewTitlesValue is False:
+                ebscoNewTitles.send_keys(Keys.SPACE)
+                print('\tSetting "Allow EBSCO To Add New Titles to Yes')
+                time.sleep(1)
+                saveButton.send_keys(Keys.ENTER)
+        elif availableTitlesEqualToSelectedTitles is False:
+            if ebscoNewTitlesValue is True:
+                ebscoNewTitles.send_keys(Keys.SPACE)
+                print('\tSetting "Allow EBSCO To Add New Titles to Yes')
+                time.sleep(1)
+                saveButton.send_keys(Keys.ENTER)
+
+        # # following logic is superceeded by new logic above
+        # if (onlySomeTitles == 'No' and ebscoNewTitlesValue == True) or (onlySomeTitles == 'Yes' and ebscoNewTitlesValue == False):
+        #     pass
+        # elif onlySomeTitles == 'No' and ebscoNewTitlesValue == False:
+        #     ebscoNewTitles.send_keys(Keys.SPACE)
+        #     print('\tSetting "Allow EBSCO To Add New Titles to Yes')
+        #     time.sleep(1)
+        #     saveButton.send_keys(Keys.ENTER)
+        # elif onlySomeTitles == 'Yes' and ebscoNewTitlesValue == True:
+        #     ebscoNewTitles.send_keys(Keys.SPACE)
+        #     print('\tSetting "Allow EBSCO To Add New Titles to No')
+        #     saveButton.send_keys(Keys.ENTER)
 
         # set the Proxy Server Value
         time.sleep(1)
@@ -155,9 +185,62 @@ def selectPackages():
             time.sleep(1)
             saveButton.send_keys(Keys.ENTER)
 
+        # add notes if omitProxy is 'Yes'
+
+        if omitProxy == 'Yes':
+
+            # find the notes tab
+            notesTab = driver.find_element_by_partial_link_text('Notes (')
+            notesTab.click()
+            time.sleep(0.5)
+            # click the "Show Drop Down"
+            notesShowDropdown = driver.find_element_by_css_selector('button.btn.btn-flat.sel-show-type.evt-disable')
+            notesShowDropdown.click()
+            # click the "Notes Assigned and Not Assigned to this Package"
+            notesAssignedandNotAssignedOption = driver.find_element_by_partial_link_text('Notes Assigned and Not Assigned to this Package')
+            notesAssignedandNotAssignedOption.click()
+            # check to see if the notes are assigned -- assumes there is only one possible note...
+            # searches for all elements that have 'Not Assigned' and if the list of elements is length 0, 'assigned' is
+            # set to True. If the length is 1 or more, the variable stays as false
+            # the 'assigned' variable is used as the test to determine whether or not to proceed with updating the note
+            # assignment
+
+            # assume note is not assigned, set it to False
+            assigned = False
+            time.sleep(.5)
+            assignedSearch = driver.find_elements_by_link_text('Not Assigned')
+
+            if len(assignedSearch) == 0:
+                assigned = True
+                print('\tNote already assigned')
+
+            if assigned is False:
+                print('\tassigning the note')
+                # if the button is set to "Not Assigned" set it to Assigned if the proxy has been set to None:
+                noteNotAssignedButton = driver.find_element_by_css_selector('a.btn.btn-small.unassigned')
+                noteNotAssignedButton.click()
+                print('\tassigned note to the title')
+
+            # return to the details tab
+            time.sleep(.5)
+            detailsTab = driver.find_element_by_partial_link_text('Details')
+            # time.sleep(.5)
+            detailsTab.click()
+            time.sleep(.5)
+
         # Save at the end
         saveButton = driver.find_element_by_css_selector('input.btn.btn-warning.evt-save')
         saveButton.send_keys(Keys.ENTER)
 
+        # this is just a little testing catch
+        testing = 'a'
+        # testing = input('continue? press y or n to stop')
+        if testing == 'n':
+            driver.close()
+            return [packageTitle, testURL, onlySomeTitles, omitProxy]
+
     driver.close()
     print('Done!')
+
+
+selectPackages()
